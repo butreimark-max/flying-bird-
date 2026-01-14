@@ -23,14 +23,14 @@ class Animation(arcade.Sprite):
 
 class Pipe  (Animation):
     def __init__(self, ):
-        super().__init__(filename="183-1831473_flappy-bird-pipe-png-flappy-bird-pipe-transparent.png",scale=0.5)
+        super().__init__(filename="pixil-frame-0 (17).png",scale=2)
     def movement(self, width, height):
         self.center_x += self.change_x
         self.center_y += self.change_y
-
+        self.change_x = -5
 class Bird (Animation):
     def __init__(self, ):
-        super().__init__(filename="загрузка (1).png",scale=0.5)
+        super().__init__(filename="pixil-frame-0 (16).png",scale=5)
     def movement(self,width,height):
         self.center_x += self.change_x
         self.center_y += self.change_y
@@ -55,8 +55,11 @@ class MyGame(arcade.Window):
         self.pipes =arcade.SpriteList()
         for p in range(6):
             pipe_variable =Pipe()
-            pipe_variable.center_x=250*p
+            pipe_variable.center_x=350*p
+            pipe_variable.center_y=SCREEN_HEIGHT/2.30
             self.pipes.append(pipe_variable)
+        for pipe in self.pipes:
+            pipe.movement(self.width, self.height)
 
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.SPACE:
@@ -73,6 +76,7 @@ class MyGame(arcade.Window):
 
     def on_update(self, delta_time):
         self.bird.movement(self.width,self.height )
+
 
 
 window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
