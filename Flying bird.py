@@ -21,13 +21,23 @@ class Animation(arcade.Sprite):
                 self.i+=1
             self.set_texture(self.i)
 
-class Pipe  (Animation):
+class PipeTop  (Animation):
     def __init__(self, ):
         super().__init__(filename="pixil-frame-0 (17).png",scale=2)
     def movement(self, width, height):
         self.center_x += self.change_x
         self.center_y += self.change_y
-        self.change_x = -5
+        self.change_x = -3
+        self.angle = 180
+
+class PipeBottom (Animation):
+    def __init__(self, ):
+        super().__init__(filename="pixil-frame-0 (17).png", scale=2)
+
+    def movement(self, width, height):
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+        self.change_x = -3
 class Bird (Animation):
     def __init__(self, ):
         super().__init__(filename="pixil-frame-0 (16).png",scale=5)
@@ -52,18 +62,46 @@ class MyGame(arcade.Window):
         """ background """
         self.background_picture= arcade.load_texture("загрузка.jpg")
         """ Pipe sprite list  """
-        self.pipes =arcade.SpriteList()
+        self.pipes  =arcade.SpriteList()
         for p in range(6):
-            pipe_variable =Pipe()
-            pipe_variable.center_x=350*p
-            pipe_variable.center_y=SCREEN_HEIGHT/2.30
-            self.pipes.append(pipe_variable)
+            bottom_pipe = PipeBottom()
+            bottom_pipe.center_x = 350 * p + SCREEN_WIDTH
+            bottom_pipe.center_y = 300
+
+            top_pipe = PipeTop()
+            top_pipe.center_x = 350 * p + SCREEN_WIDTH
+            top_pipe.center_y = SCREEN_HEIGHT - 300
+
+            self.pipes.append(bottom_pipe)
+            self.pipes.append(top_pipe)
         for pipe in self.pipes:
             pipe.movement(self.width, self.height)
+        """ Game reset """
+        self.game_reset()
+
+    def game_reset(self):
+        self.game_status = True
+        #self.player_point = 0
+        self.bird.center_x = self.width / 2
+        self.bird.center_y = self.height / 2
+        self.bird.change_y = 0
+        #self.dino_jumping.in_jump_momentum = False
+
+        for i, pipe in enumerate(self.pipes):
+            if i % 2 == 0:  # нижняя труба
+                pipe.center_x = 350 * (i // 2) + SCREEN_WIDTH
+                pipe.center_y = 300
+            else:  # верхняя труба
+                pipe.center_x = 350 * (i // 2) + SCREEN_WIDTH
+                pipe.center_y = SCREEN_HEIGHT - 300
+            pipe.change_x = -3
+
 
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.SPACE:
             self.bird.change_y = JUMP
+        if symbol == arcade.key.R:
+            self.game_reset()
 
     def on_key_release(self, symbol: int, modifiers: int):
         pass
@@ -73,10 +111,25 @@ class MyGame(arcade.Window):
         arcade.draw_texture_rectangle(self.width / 2, self.height / 2, self.width, self.height, self.background_picture)
         self.bird.draw()
         self.pipes.draw()
+        self.bird.draw_hit_box((255, 0, 0), 3)
+        self.pipes.draw_hit_boxes((255, 0, 0), 3)
 
     def on_update(self, delta_time):
-        self.bird.movement(self.width,self.height )
+        if not self.game_status:
+            return
 
+
+        if arcade.check_for_collision_with_list(self.bird, self.pipes):
+            self.game_status = False
+
+            return
+
+
+        self.bird.movement(self.width, self.height)
+
+
+        for pipe in self.pipes:
+            pipe.movement(self.width, self.height)
 
 
 window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
